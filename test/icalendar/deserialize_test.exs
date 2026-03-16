@@ -102,7 +102,7 @@ defmodule ICalendar.DeserializeTest do
       BEGIN:VEVENT
       DESCRIPTION:Escape from the world. Stare at some water.
       COMMENT:Don't forget to take something to eat !
-      URL:http://google.com
+      URL:http://google.com/CaseSensitive/Path
       SUMMARY:Going fishing
       DTEND:20151224T084500Z
       DTSTART:20151224T083000Z
@@ -115,7 +115,7 @@ defmodule ICalendar.DeserializeTest do
       """
 
       [event] = ICalendar.from_ics(ics)
-      assert event.url == "http://google.com"
+      assert event.url == "http://google.com/CaseSensitive/Path"
     end
   end
 end
