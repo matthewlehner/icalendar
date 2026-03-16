@@ -82,7 +82,7 @@ defmodule ICalendar.Recurrence do
       if by_x_rrules != %{} do
         # If there are any by_x modifiers in the rrule, build reference events based on them
         # Remove the invalid reference events later on
-        build_refernce_events_by_x_rules(event, by_x_rrules)
+        build_reference_events_by_x_rules(event, by_x_rrules)
       else
         [event]
       end
@@ -240,11 +240,11 @@ defmodule ICalendar.Recurrence do
     ICalendar.DateHelper.shift(date, shift_opts)
   end
 
-  defp build_refernce_events_by_x_rules(event, by_x_rrules) do
+  defp build_reference_events_by_x_rules(event, by_x_rrules) do
     by_x_rrules
     |> Map.keys()
     |> Enum.map(fn by_x ->
-      build_refernce_events_by_x_rule(event, by_x)
+      build_reference_events_by_x_rule(event, by_x)
     end)
     |> List.flatten()
   end
@@ -252,7 +252,7 @@ defmodule ICalendar.Recurrence do
   @valid_days ["SU", "MO", "TU", "WE", "TH", "FR", "SA"]
   @day_values %{su: 7, mo: 1, tu: 2, we: 3, th: 4, fr: 5, sa: 6}
 
-  defp build_refernce_events_by_x_rule(
+  defp build_reference_events_by_x_rule(
          %{rrule: %{byday: bydays}} = event,
          :byday
        ) do
