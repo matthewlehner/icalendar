@@ -212,13 +212,13 @@ defmodule ICalendar.Util.Deserialize do
   It should be able to handle dates from the past:
 
       iex> {:ok, date} = ICalendar.Util.Deserialize.to_date("19930407T153022Z")
-      ...> Timex.to_erl(date)
+      ...> DateTime.to_naive(date) |> NaiveDateTime.to_erl()
       {{1993, 4, 7}, {15, 30, 22}}
 
   As well as the future:
 
       iex> {:ok, date} = ICalendar.Util.Deserialize.to_date("39930407T153022Z")
-      ...> Timex.to_erl(date)
+      ...> DateTime.to_naive(date) |> NaiveDateTime.to_erl()
       {{3993, 4, 7}, {15, 30, 22}}
 
   And should return error for incorrect dates:
@@ -230,7 +230,7 @@ defmodule ICalendar.Util.Deserialize do
 
       iex> {:ok, date} = ICalendar.Util.Deserialize.to_date("19980119T020000",
       ...> %{"TZID" => "America/Chicago"})
-      ...> [Timex.to_erl(date), date.time_zone]
+      ...> [DateTime.to_naive(date) |> NaiveDateTime.to_erl(), date.time_zone]
       [{{1998, 1, 19}, {2, 0, 0}}, "America/Chicago"]
   """
   def to_date(date_string, %{"TZID" => timezone}) do
@@ -240,16 +240,27 @@ defmodule ICalendar.Util.Deserialize do
       if Regex.match?(~r/\//, timezone) do
         timezone
       else
-        Timex.Timezone.Utils.to_olson(timezone)
+        ICalendar.DateHelper.windows_to_olson(timezone)
       end
 
-    date_string =
-      case String.last(date_string) do
-        "Z" -> date_string
-        _ -> date_string <> "Z"
-      end
+    # Strip any trailing "Z" — we apply the timezone explicitly
+    date_string = String.trim_trailing(date_string, "Z")
 
-    Timex.parse(date_string <> timezone, "{YYYY}{0M}{0D}T{h24}{m}{s}Z{Zname}")
+    with <<year::binary-size(4), month::binary-size(2), day::binary-size(2), "T",
+           hour::binary-size(2), min::binary-size(2), sec::binary-size(2)>> <- date_string,
+         erl =
+           {{String.to_integer(year), String.to_integer(month), String.to_integer(day)},
+            {String.to_integer(hour), String.to_integer(min), String.to_integer(sec)}},
+         naive = NaiveDateTime.from_erl!(erl) do
+      case DateTime.from_naive(naive, timezone) do
+        {:ok, dt} -> {:ok, dt}
+        {:ambiguous, _first, second} -> {:ok, second}
+        {:gap, _just_before, just_after} -> {:ok, just_after}
+        {:error, reason} -> {:error, "Cannot convert to #{timezone}: #{inspect(reason)}"}
+      end
+    else
+      _ -> {:error, "Expected `2 digit month` at line 1, column 5."}
+    end
   end
 
   def to_date(date_string, %{"VALUE" => "DATE"}) do
