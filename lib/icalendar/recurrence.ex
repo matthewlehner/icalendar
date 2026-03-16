@@ -91,76 +91,26 @@ defmodule ICalendar.Recurrence do
       nil ->
         Stream.map([nil], fn _ -> [] end)
 
-      %{freq: "DAILY", count: count, interval: interval} ->
-        add_recurring_events_count(event, reference_events, count, days: interval)
+      %{freq: freq} = rrule ->
+        shift_opts = shift_opts_for(freq, Map.get(rrule, :interval, 1))
 
-      %{freq: "DAILY", until: until, interval: interval} ->
-        add_recurring_events_until(event, reference_events, until, days: interval)
+        case rrule do
+          %{count: count} ->
+            add_recurring_events_count(event, reference_events, count, shift_opts)
 
-      %{freq: "DAILY", count: count} ->
-        add_recurring_events_count(event, reference_events, count, days: 1)
+          %{until: until} ->
+            add_recurring_events_until(event, reference_events, until, shift_opts)
 
-      %{freq: "DAILY", until: until} ->
-        add_recurring_events_until(event, reference_events, until, days: 1)
-
-      %{freq: "DAILY", interval: interval} ->
-        add_recurring_events_until(event, reference_events, end_date, days: interval)
-
-      %{freq: "DAILY"} ->
-        add_recurring_events_until(event, reference_events, end_date, days: 1)
-
-      %{freq: "WEEKLY", until: until, interval: interval} ->
-        add_recurring_events_until(event, reference_events, until, days: interval * 7)
-
-      %{freq: "WEEKLY", count: count} ->
-        add_recurring_events_count(event, reference_events, count, days: 7)
-
-      %{freq: "WEEKLY", until: until} ->
-        add_recurring_events_until(event, reference_events, until, days: 7)
-
-      %{freq: "WEEKLY", interval: interval} ->
-        add_recurring_events_until(event, reference_events, end_date, days: interval * 7)
-
-      %{freq: "WEEKLY"} ->
-        add_recurring_events_until(event, reference_events, end_date, days: 7)
-
-      %{freq: "MONTHLY", count: count, interval: interval} ->
-        add_recurring_events_count(event, reference_events, count, months: interval)
-
-      %{freq: "MONTHLY", until: until, interval: interval} ->
-        add_recurring_events_until(event, reference_events, until, months: interval)
-
-      %{freq: "MONTHLY", count: count} ->
-        add_recurring_events_count(event, reference_events, count, months: 1)
-
-      %{freq: "MONTHLY", until: until} ->
-        add_recurring_events_until(event, reference_events, until, months: 1)
-
-      %{freq: "MONTHLY", interval: interval} ->
-        add_recurring_events_until(event, reference_events, end_date, months: interval)
-
-      %{freq: "MONTHLY"} ->
-        add_recurring_events_until(event, reference_events, end_date, months: 1)
-
-      %{freq: "YEARLY", count: count, interval: interval} ->
-        add_recurring_events_count(event, reference_events, count, years: interval)
-
-      %{freq: "YEARLY", until: until, interval: interval} ->
-        add_recurring_events_until(event, reference_events, until, years: interval)
-
-      %{freq: "YEARLY", count: count} ->
-        add_recurring_events_count(event, reference_events, count, years: 1)
-
-      %{freq: "YEARLY", until: until} ->
-        add_recurring_events_until(event, reference_events, until, years: 1)
-
-      %{freq: "YEARLY", interval: interval} ->
-        add_recurring_events_until(event, reference_events, end_date, years: interval)
-
-      %{freq: "YEARLY"} ->
-        add_recurring_events_until(event, reference_events, end_date, years: 1)
+          _ ->
+            add_recurring_events_until(event, reference_events, end_date, shift_opts)
+        end
     end
   end
+
+  defp shift_opts_for("DAILY", interval), do: [days: interval]
+  defp shift_opts_for("WEEKLY", interval), do: [days: interval * 7]
+  defp shift_opts_for("MONTHLY", interval), do: [months: interval]
+  defp shift_opts_for("YEARLY", interval), do: [years: interval]
 
   defp add_recurring_events_until(original_event, reference_events, until, shift_opts) do
     Stream.resource(
