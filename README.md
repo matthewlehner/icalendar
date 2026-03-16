@@ -40,8 +40,8 @@ events = [
   },
   %ICalendar.Event{
     summary: "Morning meeting",
-    dtstart: Timex.now,
-    dtend:   Timex.shift(Timex.now, hours: 3),
+    dtstart: DateTime.utc_now(),
+    dtend:   DateTime.add(DateTime.utc_now(), 3 * 3600),
     description: "A big long meeting with lots of details.",
     location: "456 Boring Street, Toronto ON, Canada"
   },
