@@ -64,8 +64,8 @@ defmodule ICalendar.Recurrence do
 
   ## Examples
 
-      iex> dt = Timex.Date.from({2016,8,13})
-      iex> dt_end = Timex.Date.from({2016, 8, 23})
+      iex> dt = ~U[2016-08-13 00:00:00Z]
+      iex> dt_end = ~U[2016-08-23 00:00:00Z]
       iex> event = %ICalendar.Event{rrule:%{freq: "DAILY"}, dtstart: dt, dtend: dt}
       iex> recurrences =
             ICalendar.Recurrence.get_recurrences(event)
@@ -178,8 +178,8 @@ defmodule ICalendar.Recurrence do
               Enum.map(prev_event_batch, fn reference_event ->
                 new_event = shift_event(reference_event, shift_opts)
 
-                case Timex.compare(new_event.dtstart, until) do
-                  1 -> []
+                case DateTime.compare(new_event.dtstart, until) do
+                  :gt -> []
                   _ -> [new_event]
                 end
               end)
@@ -237,13 +237,7 @@ defmodule ICalendar.Recurrence do
   end
 
   defp shift_date(date, shift_opts) do
-    case Timex.shift(date, shift_opts) do
-      %Timex.AmbiguousDateTime{} = new_date ->
-        new_date.after
-
-      new_date ->
-        new_date
-    end
+    ICalendar.DateHelper.shift(date, shift_opts)
   end
 
   defp build_refernce_events_by_x_rules(event, by_x_rrules) do
@@ -256,7 +250,7 @@ defmodule ICalendar.Recurrence do
   end
 
   @valid_days ["SU", "MO", "TU", "WE", "TH", "FR", "SA"]
-  @day_values %{su: 0, mo: 1, tu: 2, we: 3, th: 4, fr: 5, sa: 6}
+  @day_values %{su: 7, mo: 1, tu: 2, we: 3, th: 4, fr: 5, sa: 6}
 
   defp build_refernce_events_by_x_rule(
          %{rrule: %{byday: bydays}} = event,
@@ -268,11 +262,12 @@ defmodule ICalendar.Recurrence do
         day_atom = byday |> String.downcase() |> String.to_existing_atom()
 
         # determine the difference between the byday and the event's dtstart
-        day_offset_for_reference = Map.get(@day_values, day_atom) - Timex.weekday(event.dtstart)
+        day_offset_for_reference =
+          Map.get(@day_values, day_atom) - Date.day_of_week(event.dtstart)
 
         Map.merge(event, %{
-          dtstart: Timex.shift(event.dtstart, days: day_offset_for_reference),
-          dtend: Timex.shift(event.dtend, days: day_offset_for_reference)
+          dtstart: ICalendar.DateHelper.shift(event.dtstart, days: day_offset_for_reference),
+          dtend: ICalendar.DateHelper.shift(event.dtend, days: day_offset_for_reference)
         })
       else
         # Ignore the invalid byday value

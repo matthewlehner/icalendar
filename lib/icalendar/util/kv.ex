@@ -20,7 +20,8 @@ defmodule ICalendar.Util.KV do
 
       iex> date =
       ...>   {{2015, 12, 24}, {8, 30, 0}}
-      ...>   |> Timex.to_datetime("America/Chicago")
+      ...>   |> NaiveDateTime.from_erl!()
+      ...>   |> DateTime.from_naive!("America/Chicago")
       ...> ICalendar.Util.KV.build("foo", date)
       "foo;TZID=America/Chicago:20151224T083000\n"
 
