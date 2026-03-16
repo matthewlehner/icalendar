@@ -27,6 +27,38 @@ defmodule ICalendarTest do
            """
   end
 
+  test "ICalendar.to_ics/1 with METHOD:REQUEST" do
+    ics = %ICalendar{method: "REQUEST"} |> ICalendar.to_ics()
+
+    assert ics == """
+           BEGIN:VCALENDAR
+           CALSCALE:GREGORIAN
+           METHOD:REQUEST
+           VERSION:2.0
+           PRODID:-//Elixir ICalendar//Elixir ICalendar//EN
+           END:VCALENDAR
+           """
+  end
+
+  test "ICalendar.to_ics/1 with METHOD:CANCEL" do
+    ics = %ICalendar{method: "CANCEL"} |> ICalendar.to_ics()
+
+    assert ics == """
+           BEGIN:VCALENDAR
+           CALSCALE:GREGORIAN
+           METHOD:CANCEL
+           VERSION:2.0
+           PRODID:-//Elixir ICalendar//Elixir ICalendar//EN
+           END:VCALENDAR
+           """
+  end
+
+  test "ICalendar.to_ics/1 with METHOD upcases the value" do
+    ics = %ICalendar{method: "request"} |> ICalendar.to_ics()
+
+    assert ics =~ "METHOD:REQUEST"
+  end
+
   test "ICalendar.to_ics/1 of a calendar with an event, as in README" do
     events = [
       %ICalendar.Event{

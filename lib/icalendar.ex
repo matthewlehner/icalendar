@@ -3,7 +3,7 @@ defmodule ICalendar do
   Generating ICalendars.
   """
 
-  defstruct events: []
+  defstruct events: [], method: nil
   defdelegate to_ics(events, options \\ []), to: ICalendar.Serialize
   defdelegate from_ics(events), to: ICalendar.Deserialize
 
@@ -43,10 +43,15 @@ defimpl ICalendar.Serialize, for: ICalendar do
     events = Enum.map(calendar.events, &ICalendar.Serialize.to_ics/1)
     vendor = Keyword.get(options, :vendor, "Elixir ICalendar")
 
+    method =
+      if calendar.method,
+        do: "METHOD:#{calendar.method |> to_string() |> String.upcase()}\n",
+        else: ""
+
     """
     BEGIN:VCALENDAR
     CALSCALE:GREGORIAN
-    VERSION:2.0
+    #{method}VERSION:2.0
     PRODID:-//Elixir ICalendar//#{vendor}//EN
     #{events}END:VCALENDAR
     """
