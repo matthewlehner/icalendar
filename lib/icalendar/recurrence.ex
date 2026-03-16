@@ -72,8 +72,8 @@ defmodule ICalendar.Recurrence do
             |> Enum.to_list()
 
   """
-  @spec get_recurrences(%Event{}) :: %Stream{}
-  @spec get_recurrences(%Event{}, %DateTime{}) :: %Stream{}
+  @spec get_recurrences(Event.t()) :: Enumerable.t()
+  @spec get_recurrences(Event.t(), DateTime.t()) :: Enumerable.t()
   def get_recurrences(event, end_date \\ DateTime.utc_now()) do
     by_x_rrules =
       if is_map(event.rrule), do: Map.take(event.rrule, @supported_by_x_rrules), else: %{}

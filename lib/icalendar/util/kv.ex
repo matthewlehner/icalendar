@@ -38,6 +38,7 @@ defmodule ICalendar.Util.KV do
           "ATTENDEE;CN=James SM;PARTSTAT=ACCEPTED:mailto:james@clockk.com\n"
 
   """
+  @spec build(String.t(), term()) :: String.t()
   def build(_, nil) do
     ""
   end

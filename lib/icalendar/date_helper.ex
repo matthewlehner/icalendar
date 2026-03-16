@@ -7,6 +7,9 @@ defmodule ICalendar.DateHelper do
   Windows-to-IANA timezone name conversion.
   """
 
+  @type datetime :: DateTime.t() | NaiveDateTime.t()
+  @type shift_opts :: [days: integer(), months: integer(), years: integer()]
+
   @doc """
   Shifts a `DateTime` or `NaiveDateTime` by the given options.
 
@@ -32,6 +35,7 @@ defmodule ICalendar.DateHelper do
       ~U[2020-02-29 10:00:00Z]
 
   """
+  @spec shift(datetime(), shift_opts()) :: datetime()
   def shift(datetime, opts) do
     days = Keyword.get(opts, :days, 0)
     months = Keyword.get(opts, :months, 0)
@@ -288,6 +292,7 @@ defmodule ICalendar.DateHelper do
     "Line Islands Standard Time" => "Pacific/Kiritimati"
   }
 
+  @spec windows_to_olson(String.t()) :: String.t() | nil
   def windows_to_olson(name) do
     Map.get(@windows_to_olson, name)
   end

@@ -3,6 +3,28 @@ defmodule ICalendar.Event do
   Calendars have events.
   """
 
+  @type t :: %__MODULE__{
+          summary: String.t() | nil,
+          dtstart: DateTime.t() | NaiveDateTime.t() | nil,
+          dtend: DateTime.t() | NaiveDateTime.t() | nil,
+          rrule: map() | nil,
+          exdates: [DateTime.t()],
+          description: String.t() | nil,
+          location: String.t() | nil,
+          url: String.t() | nil,
+          uid: String.t() | nil,
+          prodid: String.t() | nil,
+          status: String.t() | nil,
+          categories: [String.t()] | nil,
+          class: String.t() | nil,
+          comment: String.t() | nil,
+          geo: {float(), float()} | nil,
+          modified: DateTime.t() | nil,
+          organizer: String.t() | nil,
+          sequence: String.t() | integer() | nil,
+          attendees: [map()]
+        }
+
   defstruct summary: nil,
             dtstart: nil,
             dtend: nil,

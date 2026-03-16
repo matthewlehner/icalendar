@@ -6,6 +6,7 @@ defmodule ICalendar.Util.Deserialize do
   alias ICalendar.Event
   alias ICalendar.Property
 
+  @spec build_event([String.t()]) :: ICalendar.Event.t()
   def build_event(lines) when is_list(lines) do
     lines
     |> Enum.filter(&(&1 != ""))
@@ -21,6 +22,7 @@ defmodule ICalendar.Util.Deserialize do
       %ICalendar.Property{key: "LOREM", params: %{}, value: "ipsum"}
 
   """
+  @spec retrieve_kvs(String.t()) :: ICalendar.Property.t()
   def retrieve_kvs(line) do
     # Split Line up into key and value
     {key, value, params} =
@@ -50,6 +52,7 @@ defmodule ICalendar.Util.Deserialize do
       ["KEY", %{"LOREM" => "ipsum", "DOLOR" => "sit"}]
 
   """
+  @spec retrieve_params(String.t()) :: [String.t() | map()]
   def retrieve_params(key) do
     [key | params] = String.split(key, ";", trim: true)
 
@@ -242,6 +245,7 @@ defmodule ICalendar.Util.Deserialize do
       ...> [DateTime.to_naive(date) |> NaiveDateTime.to_erl(), date.time_zone]
       [{{1998, 1, 19}, {2, 0, 0}}, "America/Chicago"]
   """
+  @spec to_date(String.t(), map()) :: {:ok, DateTime.t()} | {:error, String.t()}
   def to_date(date_string, %{"TZID" => timezone}) do
     # Microsoft Outlook calendar .ICS files report times in Greenwich Standard Time (UTC +0)
     # so just convert this to UTC
@@ -280,6 +284,7 @@ defmodule ICalendar.Util.Deserialize do
     to_date(date_string, %{"TZID" => "Etc/UTC"})
   end
 
+  @spec to_date(String.t()) :: {:ok, DateTime.t()} | {:error, String.t()}
   def to_date(date_string) do
     to_date(date_string, %{"TZID" => "Etc/UTC"})
   end
@@ -305,6 +310,7 @@ defmodule ICalendar.Util.Deserialize do
       iex> ICalendar.Util.Deserialize.desanitized(~s(lorem\\, ipsum))
       "lorem, ipsum"
   """
+  @spec desanitized(String.t()) :: String.t()
   def desanitized(string) do
     string
     |> String.replace(~s(\\), "")
@@ -327,6 +333,7 @@ defmodule ICalendar.Util.Deserialize do
   }
   ```
   """
+  @spec parse_rrule(String.t()) :: map()
   def parse_rrule(rrule) do
     rrule
     |> String.split(";")

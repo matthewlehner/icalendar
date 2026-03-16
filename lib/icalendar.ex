@@ -3,6 +3,11 @@ defmodule ICalendar do
   Generating ICalendars.
   """
 
+  @type t :: %__MODULE__{
+          events: [ICalendar.Event.t()],
+          method: atom() | String.t() | nil
+        }
+
   defstruct events: [], method: nil
   defdelegate to_ics(events, options \\ []), to: ICalendar.Serialize
   defdelegate from_ics(events), to: ICalendar.Deserialize
@@ -29,10 +34,12 @@ defmodule ICalendar do
       end
 
   """
+  @spec encode_to_iodata(t(), keyword()) :: {:ok, String.t()}
   def encode_to_iodata(calendar, options \\ []) do
     {:ok, encode_to_iodata!(calendar, options)}
   end
 
+  @spec encode_to_iodata!(t(), keyword()) :: String.t()
   def encode_to_iodata!(calendar, _options \\ []) do
     to_ics(calendar)
   end
