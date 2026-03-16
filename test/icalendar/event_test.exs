@@ -200,4 +200,89 @@ defmodule ICalendar.EventTest do
            END:VEVENT
            """
   end
+
+  describe "validate/1" do
+    test "returns :ok for a valid event" do
+      event = %Event{
+        summary: "Meeting",
+        dtstart: ~U[2024-01-15 10:00:00Z],
+        dtend: ~U[2024-01-15 11:00:00Z],
+        status: "confirmed",
+        class: "public",
+        geo: {43.6978819, -79.3810277},
+        categories: ["Work"],
+        url: "http://example.com"
+      }
+
+      assert {:ok, ^event} = Event.validate(event)
+    end
+
+    test "returns :ok for an empty event" do
+      assert {:ok, %Event{}} = Event.validate(%Event{})
+    end
+
+    test "returns error for invalid dtstart" do
+      event = %Event{dtstart: "not-a-date"}
+      assert {:error, errors} = Event.validate(event)
+      assert "dtstart must be a DateTime or NaiveDateTime" in errors
+    end
+
+    test "returns error for invalid dtend" do
+      event = %Event{dtend: 12345}
+      assert {:error, errors} = Event.validate(event)
+      assert "dtend must be a DateTime or NaiveDateTime" in errors
+    end
+
+    test "returns error when dtend is before dtstart" do
+      event = %Event{
+        dtstart: ~U[2024-01-15 11:00:00Z],
+        dtend: ~U[2024-01-15 10:00:00Z]
+      }
+
+      assert {:error, errors} = Event.validate(event)
+      assert "dtend must not be before dtstart" in errors
+    end
+
+    test "returns error for invalid status" do
+      event = %Event{status: "bogus"}
+      assert {:error, errors} = Event.validate(event)
+      assert "status must be one of: tentative, confirmed, cancelled" in errors
+    end
+
+    test "returns error for invalid class" do
+      event = %Event{class: "bogus"}
+      assert {:error, errors} = Event.validate(event)
+      assert "class must be one of: public, private, confidential" in errors
+    end
+
+    test "returns error for invalid geo" do
+      event = %Event{geo: "not a tuple"}
+      assert {:error, errors} = Event.validate(event)
+      assert "geo must be a {latitude, longitude} tuple of numbers" in errors
+    end
+
+    test "returns error for invalid categories" do
+      event = %Event{categories: "not a list"}
+      assert {:error, errors} = Event.validate(event)
+      assert "categories must be a list of strings" in errors
+    end
+
+    test "returns error for invalid url" do
+      event = %Event{url: 12345}
+      assert {:error, errors} = Event.validate(event)
+      assert "url must be a string" in errors
+    end
+
+    test "collects multiple errors" do
+      event = %Event{
+        dtstart: "bad",
+        dtend: "bad",
+        status: "bogus",
+        geo: "bad"
+      }
+
+      assert {:error, errors} = Event.validate(event)
+      assert length(errors) == 4
+    end
+  end
 end
