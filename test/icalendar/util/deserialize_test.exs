@@ -20,8 +20,8 @@ defmodule ICalendar.Util.DeserializeTest do
 
     assert event == %Event{
              description: "Escape from the world. Stare at some water.",
-             dtstart: Timex.to_datetime({{2015, 12, 24}, {8, 30, 0}}),
-             dtend: Timex.to_datetime({{2015, 12, 24}, {8, 45, 0}}),
+             dtstart: ~U[2015-12-24 08:30:00Z],
+             dtend: ~U[2015-12-24 08:45:00Z],
              location: nil,
              summary: "Going fishing"
            }
@@ -232,8 +232,8 @@ defmodule ICalendar.Util.DeserializeTest do
       |> String.split("\n")
       |> Deserialize.build_event()
 
-    dt1 = Timex.Timezone.convert(~U[2020-09-16 18:30:00Z], "America/Toronto")
-    dt2 = Timex.Timezone.convert(~U[2020-09-17 18:30:00Z], "America/Toronto")
+    dt1 = DateTime.shift_zone!(~U[2020-09-16 18:30:00Z], "America/Toronto")
+    dt2 = DateTime.shift_zone!(~U[2020-09-17 18:30:00Z], "America/Toronto")
 
     assert %Event{
              exdates: [

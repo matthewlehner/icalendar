@@ -23,8 +23,8 @@ defmodule ICalendar.DeserializeTest do
       [event] = ICalendar.from_ics(ics)
 
       assert event == %Event{
-               dtstart: Timex.to_datetime({{2015, 12, 24}, {8, 30, 0}}),
-               dtend: Timex.to_datetime({{2015, 12, 24}, {8, 45, 0}}),
+               dtstart: ~U[2015-12-24 08:30:00Z],
+               dtend: ~U[2015-12-24 08:45:00Z],
                summary: "Going fishing",
                description: "Escape from the world. Stare at some water.",
                location: "123 Fun Street, Toronto ON, Canada",
@@ -57,8 +57,8 @@ defmodule ICalendar.DeserializeTest do
       [event] = ICalendar.from_ics(ics)
 
       assert event == %Event{
-               dtstart: Timex.to_datetime({{2015, 12, 24}, {8, 30, 0}}),
-               dtend: Timex.to_datetime({{2015, 12, 24}, {8, 45, 0}}),
+               dtstart: ~U[2015-12-24 08:30:00Z],
+               dtend: ~U[2015-12-24 08:45:00Z],
                summary:
                  "Going fishing at the lake that happens to be in the middle of fun street.",
                description:

@@ -33,8 +33,8 @@ defmodule ICalendar.EventTest do
   test "ICalendar.to_ics/1 with date start and end" do
     ics =
       %Event{
-        dtstart: Timex.to_date({2015, 12, 24}),
-        dtend: Timex.to_date({2015, 12, 24})
+        dtstart: Date.from_erl!({2015, 12, 24}),
+        dtend: Date.from_erl!({2015, 12, 24})
       }
       |> ICalendar.to_ics()
 
@@ -49,8 +49,8 @@ defmodule ICalendar.EventTest do
   test "ICalendar.to_ics/1 with datetime start and end" do
     ics =
       %Event{
-        dtstart: Timex.to_datetime({{2015, 12, 24}, {8, 30, 00}}),
-        dtend: Timex.to_datetime({{2015, 12, 24}, {8, 45, 00}})
+        dtstart: ~U[2015-12-24 08:30:00Z],
+        dtend: ~U[2015-12-24 08:45:00Z]
       }
       |> ICalendar.to_ics()
 
@@ -65,11 +65,13 @@ defmodule ICalendar.EventTest do
   test "ICalendar.to_ics/1 with datetime with timezone" do
     dtstart =
       {{2015, 12, 24}, {8, 30, 00}}
-      |> Timex.to_datetime("America/Chicago")
+      |> NaiveDateTime.from_erl!()
+      |> DateTime.from_naive!("America/Chicago")
 
     dtend =
       {{2015, 12, 24}, {8, 45, 00}}
-      |> Timex.to_datetime("America/Chicago")
+      |> NaiveDateTime.from_erl!()
+      |> DateTime.from_naive!("America/Chicago")
 
     ics =
       %Event{dtstart: dtstart, dtend: dtend}
