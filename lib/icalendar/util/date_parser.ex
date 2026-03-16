@@ -103,20 +103,29 @@ defmodule ICalendar.Util.DateParser do
     date = {year, month, day}
     time = {hour, minutes, seconds}
 
-    {to_integers(date), to_integers(time)}
-    |> Timex.to_datetime(timezone)
+    erl = {to_integers(date), to_integers(time)}
+    naive = NaiveDateTime.from_erl!(erl)
+
+    case DateTime.from_naive(naive, timezone) do
+      {:ok, dt} -> dt
+      {:ambiguous, _first, second} -> second
+      {:gap, _just_before, just_after} -> just_after
+      {:error, reason} -> raise ArgumentError, "cannot convert to #{timezone}: #{inspect(reason)}"
+    end
   end
 
   # Date Format: "19690620Z", Timezone: *
   def parse(<<year::binary-size(4), month::binary-size(2), day::binary-size(2), "Z">>, _timezone) do
     {to_integers({year, month, day}), {0, 0, 0}}
-    |> Timex.to_datetime()
+    |> NaiveDateTime.from_erl!()
+    |> DateTime.from_naive!("Etc/UTC")
   end
 
   # Date Format: "19690620", Timezone: *
   def parse(<<year::binary-size(4), month::binary-size(2), day::binary-size(2)>>, _timezone) do
     {to_integers({year, month, day}), {0, 0, 0}}
-    |> Timex.to_datetime()
+    |> NaiveDateTime.from_erl!()
+    |> DateTime.from_naive!("Etc/UTC")
   end
 
   @spec to_integers({String.t(), String.t(), String.t()}) :: {integer, integer, integer}
