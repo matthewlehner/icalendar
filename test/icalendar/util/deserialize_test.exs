@@ -242,4 +242,66 @@ defmodule ICalendar.Util.DeserializeTest do
              ]
            } = event
   end
+
+  test "handles invalid date strings without crashing" do
+    event =
+      """
+      BEGIN:VEVENT
+      DTSTART:not-a-date
+      DTEND:also-bad
+      SUMMARY:Bad dates
+      END:VEVENT
+      """
+      |> String.trim()
+      |> String.split("\n")
+      |> Deserialize.build_event()
+
+    assert %Event{dtstart: nil, dtend: nil, summary: "Bad dates"} = event
+  end
+
+  test "handles invalid EXDATE without crashing" do
+    event =
+      """
+      BEGIN:VEVENT
+      DTSTART:20151224T083000Z
+      EXDATE:not-a-date
+      SUMMARY:Bad exdate
+      END:VEVENT
+      """
+      |> String.trim()
+      |> String.split("\n")
+      |> Deserialize.build_event()
+
+    assert %Event{dtstart: ~U[2015-12-24 08:30:00Z], exdates: [], summary: "Bad exdate"} = event
+  end
+
+  test "handles invalid GEO values without crashing" do
+    event =
+      """
+      BEGIN:VEVENT
+      GEO:not-a-float;also-bad
+      SUMMARY:Bad geo
+      END:VEVENT
+      """
+      |> String.trim()
+      |> String.split("\n")
+      |> Deserialize.build_event()
+
+    assert %Event{geo: nil, summary: "Bad geo"} = event
+  end
+
+  test "handles invalid LAST-MODIFIED without crashing" do
+    event =
+      """
+      BEGIN:VEVENT
+      LAST-MODIFIED:garbage
+      SUMMARY:Bad modified
+      END:VEVENT
+      """
+      |> String.trim()
+      |> String.split("\n")
+      |> Deserialize.build_event()
+
+    assert %Event{modified: nil, summary: "Bad modified"} = event
+  end
 end

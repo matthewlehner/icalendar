@@ -79,16 +79,20 @@ defmodule ICalendar.Util.Deserialize do
         %Property{key: "DTSTART", value: dtstart, params: params},
         acc
       ) do
-    {:ok, timestamp} = to_date(dtstart, params)
-    %{acc | dtstart: timestamp}
+    case to_date(dtstart, params) do
+      {:ok, timestamp} -> %{acc | dtstart: timestamp}
+      {:error, _} -> acc
+    end
   end
 
   def parse_attr(
         %Property{key: "DTEND", value: dtend, params: params},
         acc
       ) do
-    {:ok, timestamp} = to_date(dtend, params)
-    %{acc | dtend: timestamp}
+    case to_date(dtend, params) do
+      {:ok, timestamp} -> %{acc | dtend: timestamp}
+      {:error, _} -> acc
+    end
   end
 
   def parse_attr(
@@ -108,8 +112,11 @@ defmodule ICalendar.Util.Deserialize do
         acc
       ) do
     exdates = Map.get(acc, :exdates, [])
-    {:ok, timestamp} = to_date(exdate, params)
-    %{acc | exdates: [timestamp | exdates]}
+
+    case to_date(exdate, params) do
+      {:ok, timestamp} -> %{acc | exdates: [timestamp | exdates]}
+      {:error, _} -> acc
+    end
   end
 
   def parse_attr(
@@ -172,8 +179,10 @@ defmodule ICalendar.Util.Deserialize do
         %Property{key: "LAST-MODIFIED", value: modified},
         acc
       ) do
-    {:ok, timestamp} = to_date(modified)
-    %{acc | modified: timestamp}
+    case to_date(modified) do
+      {:ok, timestamp} -> %{acc | modified: timestamp}
+      {:error, _} -> acc
+    end
   end
 
   def parse_attr(
@@ -276,12 +285,16 @@ defmodule ICalendar.Util.Deserialize do
   end
 
   defp to_geo(geo) do
-    geo
-    |> desanitized()
-    |> String.split(";")
-    |> Enum.map(fn x -> Float.parse(x) end)
-    |> Enum.map(fn {x, _} -> x end)
-    |> List.to_tuple()
+    parts =
+      geo
+      |> desanitized()
+      |> String.split(";")
+      |> Enum.map(&Float.parse/1)
+
+    case parts do
+      [{lat, _}, {lon, _}] -> {lat, lon}
+      _ -> nil
+    end
   end
 
   @doc ~S"""
