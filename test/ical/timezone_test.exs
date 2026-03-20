@@ -48,7 +48,8 @@ defmodule ICal.TimezoneTest do
 
   test "Serializing a calendar with timezones" do
     calendar = %ICal{
-      timezones: [Fixtures.timezone("America/New_York3"), Fixtures.timezone("Also Fictitious")]
+      timezones: [Fixtures.timezone("America/New_York3"), Fixtures.timezone("Also Fictitious")],
+      product_id: ""
     }
 
     # separate out the rrules as they are not stable in serialization due to map iteration order
